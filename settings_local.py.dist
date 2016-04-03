@@ -1,6 +1,18 @@
 # encoding:utf-8
 import os.path
 
+"""
+1. Copy this file to settings_local.py
+2. Edit APP_URL because the default 'http://' gives an error at runtime.
+   If running locally on port 8001 set it to 'http://localhost:8001'
+   or 'http://127.0.0.1:8001' works too.
+3. Set TIME_ZONE to your timezone e.g. TIME_ZONE = 'Australia/Melbourne'
+4. Ensure DEBUG=False when you are running the db setup:
+    python manage.py syncdb
+    python manage.py migrate forum
+5. Change DEBUG=True when you finally want to run the server on your local dev machine.
+"""
+
 SITE_SRC_ROOT = os.path.dirname(__file__)
 LOG_FILENAME = 'django.osqa.log'
 LOGGING = {

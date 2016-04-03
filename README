@@ -6,3 +6,13 @@ Bug tracking - http://jira.osqa.net
 Wiki - http://wiki.osqa.net
 
 * The ‘stats’ module sends install info to our OSQA directory, including number of users, number of questions, and the email addresses of the super users.  These email addresses are not sold to any third party.
+
+This fork of OSQA was made because there are several extra installation steps needed
+to get things installed and running.  The requirements.txt has been enhanced with
+specific versions of markdown and debug_toolbar which have long since evolved to be
+incompatible with this version of OSQA.  Also, the existing migrations fail in mysql
+(which is the default db in settings.py) thus they have been removed and replaced with
+a single initial migration, which works.  Apologies to anyone migrating an existing OSQA
+database.
+
+For detailed installation instructions see INSTALL.
