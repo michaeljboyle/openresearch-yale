@@ -1,0 +1,117 @@
+For installation instruction go to:
+
+http://wiki.osqa.net/display/docs/Home
+
+The wiki contains many recipes to help you install on different hosting providers.
+
+This fork of OSQA - https://github.com/abulka/osqa
+==================================================
+
+1. Added specific & needed versions of markdown and debug_toolbar in requirements.txt
+2. Removed forum migrations and created a single forum migration to stop mysql migration troubles
+   which otherwise couldn't handle some of the migrations for some reason.
+   (on a mac, mysql-5.7.11-osx10.10-x86_64.dmg, el captitan, 2016, default tables are innodb).
+3. Add fix in settings.py to allow debug_toolbar to work when running in debug mode, by adding reference to static etc
+4. Added instructions on how to run in both debug and production mode
+5. Added mysql setup instructions for mac
+
+Install MYSQL
+-------------
+run the installer e.g.
+mysql-5.7.11-osx10.10-x86_64.dmg
+
+take a note of the temporary password
+2016-04-01T23:46:47.493400Z 1 [Note] A temporary password is generated for root@localhost: SOME_INITIAL_PASSWORD
+
+install mysql workbench
+mysql-workbench-community-6.3.6-osx-x86_64.dmg
+
+start mysql server
+using mac system proferences - an icon should be there for mysql - nice.
+
+set up aliases to useful mysql commands
+in your .bash_profile
+alias mysql=/usr/local/mysql/bin/mysql
+alias mysqladmin=/usr/local/mysql/bin/mysqladmin
+
+change mysql root password
+You need to do this because mysql won’t let you perform any operations until it is done.
+mysql -u root -p
+when prompted enter in the temporary password SOME_INITIAL_PASSWORD given during install
+Then, set password to your own
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('XXXX_YOUR_ROOT_PASSWORD’);
+
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+
+install python mysql library
+assuming you have a virtual environment all set up and ready to go
+export PATH=$PATH:/usr/local/mysql/bin
+pip install mysql-python
+
+Install OSQA
+------------
+Ensure you create a virtual environment since OSQA uses the older django 1.6
+
+pip install -r requirements.txt
+
+cp settings_local.py.dist settings_local.py
+change db user and password in settings_local.py to e.g. root/XXXX_YOUR_ROOT_PASSWORD
+set APP_URL e.g. APP_URL = 'http://localhost:8001'
+set TIME_ZONE e.g. TIME_ZONE = 'Australia/Melbourne'
+
+create a ‘osqa’ schema in mysql using workbench.
+just leave default collation blank, or pick utf8 default.
+ensure DEBUG=False in settings_local.py - tricky!!!
+
+python manage.py syncdb
+python manage.py migrate forum
+
+This means syncdb creates the inital auth etc. tables but not the forum tables,
+which are controlled by south because of the migration.  Thus you need the migrate command.
+Remember: syncdb will ignore south controlled apps (if there are migrations present)
+
+To run in debug mode
+--------------------
+enable DEBUG in settings_local.py
+DEBUG = True
+
+python manage.py rumserver 8001
+
+To run in production mode
+-------------------------
+If you want to run in production mode with DEBUG = False you need to:
+
+Add 127.0.0.1 to settings_local.py e.g.
+ALLOWED_HOSTS = ('yourhostname.com', '127.0.0.1') 
+
+Also because since there is no serving of static files in production mode, when DEBUG is Fasle,
+(this should be done by apache or whatever), if you want to force django to serve them anyway
+because you are testing production mode in a local dev environmnet, then run:
+
+python manage.py runserver --insecure 8001
+
+however this won’t work unless you have the 'django.contrib.staticfiles' in INSTALLED_APPS and
+have set STATIC_URL thus:
+
+@@ -113,16 +113,18 @@ INSTALLED_APPS = [
+     'django.contrib.humanize',
+     'django.contrib.sitemaps',
+     'django.contrib.messages',
++    'django.contrib.staticfiles',
+     'forum',
+ ]
++STATIC_URL = '/static/'
+
+Logging in
+----------
+the forum user is different to the django users
+so log in to osqa via the normal web mechanism and the first user will be the admin !
+
+log is in found in
+------------------
+log/django.osqa.log
+
+useful management command to check your install
+-----------------------------------------------
+python manage.py checkinstall
+
